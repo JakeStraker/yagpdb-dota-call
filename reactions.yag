@@ -1,0 +1,36 @@
+{{/* 
+    Produces a dota game call, lets players register and rolls for them - reactions
+
+    Author: Jake Straker (www.github.com/JakeStraker)
+*/}}
+
+{{$cid := .Reaction.ChannelID}}{{$mid := .Reaction.MessageID}}{{$en := .Reaction.Emoji.Name}}
+{{if eq .Message.Author.ID 204255221017214977}}
+	{{if (eq $en "✅")}}
+		{{$id := 0}}
+		{{$key := "dotaplayers"}}
+		{{$player := .User.ID}}
+		{{$currentPlayers := cslice}}
+		
+		{{if dbGet (toInt64 $id) $key}}
+			{{$currentPlayers = (dbGet (toInt64 $id) $key).Value}}
+			{{$currentPlayers = $currentPlayers.Append $player}}
+			{{dbSet (toInt64 $id) $key $currentPlayers}}
+		{{else}}
+			{{$currentPlayers = $currentPlayers.Append $player}}
+			{{dbSet (toInt64 $id) $key $currentPlayers}}
+		{{end}}
+
+		{{editMessage $cid $mid (cembed
+		"title" "Dota Call - React ✅ if you're going to play"
+		"description" "The following players are participating:"
+		
+		"color" 0xde2e43)}}
+
+	{{else if (eq $en "🎲")}}
+		{{editMessage $cid $mid (cembed
+		"title" "💡 Example2"
+		"description" "Idk what to type here so i typed this"
+		"color" 0xffd984)}}
+	{{end}}
+{{end}}
