@@ -1,0 +1,64 @@
+{{/* 
+    Produces a dota game call, lets players register and rolls for them - reactions
+
+    Author: Jake Straker (www.github.com/JakeStraker)
+*/}}
+
+{{$cid := .Reaction.ChannelID}}{{$mid := .Reaction.MessageID}}{{$reactionType := .ReactionAdded}}{{$en := .Reaction.Emoji.Name}}
+{{if eq .Message.Author.ID 204255221017214977}}
+	{{if (eq $en "✅")}}
+		{{if (eq $reactionType true)}}
+			{{/* Variables for interacting with the database */}}
+			{{$id := 0}}
+			{{$key := "dotaplayers"}}
+			{{$player := (print "<@" .User.ID ">")}}
+			{{$currentPlayers := cslice}}
+			
+			{{if dbGet (toInt64 $id) $key}}
+				{{$currentPlayers = (dbGet (toInt64 $id) $key).Value}}
+				{{$currentPlayers = $currentPlayers.Append $player}}
+				{{dbSet (toInt64 $id) $key $currentPlayers}}
+			{{else}}
+				{{$currentPlayers = $currentPlayers.Append $player}}
+				{{dbSet (toInt64 $id) $key $currentPlayers}}
+			{{end}}
+			{{editMessage $cid $mid (cembed
+			"title" "Dota Call - React ✅ if you're going to play"
+			"description" (print "Players:" $currentPlayers)
+			"color" 0xde2e43)}}
+
+		{{else if (eq $reactionType false)}}
+			{{/* Variables for interacting with the database */}}
+			{{$id := 0}}
+			{{$key := "dotaplayers"}}
+			{{$player := (print "<@" .User.ID ">")}}
+
+			{{/* since deleting an item from a slice in yag is impossible, 
+			we're going to create a new slice to replace it,
+			including everything except the entry we want to delete */}}
+			{{$newPlayerList := cslice}}
+			{{if dbGet (toInt64 $id) $key}}
+				{{$currentPlayers := (dbGet (toInt64 $id) $key).Value}}
+				{{ range $currentPlayers -}}
+					{{if ne $player .}}
+					{{$newPlayerList = $newPlayerList.Append .}}
+					{{end}}
+				{{$currentPlayers = $newPlayerList}}
+				{{- end -}}
+				{{dbSet (toInt64 $id) $key $currentPlayers}}
+							{{editMessage $cid $mid (cembed
+			"title" "Dota Call - React ✅ if you're going to play"
+			"description" (print "Players:" $currentPlayers)
+			"color" 0xde2e43)}}
+				{{end}}
+
+		{{end}}
+	{{/* {{else if (eq $en "🎲")}} */}}
+	{{else if (eq $en "🐕")}}
+		{{editMessage $cid $mid (cembed
+		"title" "Rolling for pick order"
+		"description" "This is currently not functional"
+		"color" 0xffd984)}}
+		{{deleteAllMessageReactions $cid $mid}}
+	{{end}}
+{{end}}

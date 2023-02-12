@@ -1,0 +1,17 @@
+{{/* 
+    Produces a dota game call, lets players register and rolls for them - setup
+
+    Author: Jake Straker (www.github.com/JakeStraker)
+*/}}
+
+
+{{$id := 0}}
+{{$key := "dotaplayers"}}
+{{dbDel $id $key}}
+
+{{$x := sendMessageRetID nil (cembed
+"title" "Dota Call - React ✅ if you're going to play"
+"description" `✅ = I'm Playing
+🎲 Start Rolls (currently not functional)`
+"color" 0xe67e22)}}
+{{addMessageReactions nil $x "✅" "🎲"}}
