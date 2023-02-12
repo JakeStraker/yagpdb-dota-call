@@ -4,13 +4,14 @@
     Author: Jake Straker (www.github.com/JakeStraker)
 */}}
 
-{{/* 
-Todo here, Blank out the database on the global "dotaplayers" key
-*/}}
+
+{{$id := 0}}
+{{$key := "dotaplayers"}}
+{{dbDel $id $key}}
 
 {{$x := sendMessageRetID nil (cembed
 "title" "Dota Call - React ✅ if you're going to play"
-"description" `✅ I'm Playing
-🎲 Start Rolls (Person who made the call only)`
+"description" `✅ = I'm Playing
+🎲 Start Rolls (currently not functional)`
 "color" 0xe67e22)}}
 {{addMessageReactions nil $x "✅" "🎲"}}
