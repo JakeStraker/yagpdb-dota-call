@@ -11,7 +11,7 @@
 			{{/* Variables for interacting with the database */}}
 			{{$id := 0}}
 			{{$key := "dotaplayers"}}
-			{{$player := (print "<@" .User.ID ">")}}
+			{{$player := (sdict "Player" .User.ID "roll" (randInt 100))}}
 			{{$currentPlayers := cslice}}
 			
 			{{if dbGet (toInt64 $id) $key}}
@@ -22,16 +22,23 @@
 				{{$currentPlayers = $currentPlayers.Append $player}}
 				{{dbSet (toInt64 $id) $key $currentPlayers}}
 			{{end}}
+
+			{{/* Here we have to construct a string that can display in our embed, all the players and their rolls */}}
+			{{$playersString := ""}}
+			{{range $currentPlayers}}
+				{{- $playersString = joinStr "" $playersString "\n" "<@" .Player ">" "**: **" "rolled " .roll  }}
+			{{end}}
+
 			{{editMessage $cid $mid (cembed
 			"title" "Dota Call - React ✅ if you're going to play"
-			"description" (print "Players:" $currentPlayers)
+			"description" (print "Players:" $playersString)
 			"color" 0xde2e43)}}
 
 		{{else if (eq $reactionType false)}}
 			{{/* Variables for interacting with the database */}}
 			{{$id := 0}}
 			{{$key := "dotaplayers"}}
-			{{$player := (print "<@" .User.ID ">")}}
+			{{$player := .User.ID}}
 
 			{{/* since deleting an item from a slice in yag is impossible, 
 			we're going to create a new slice to replace it,
@@ -40,15 +47,22 @@
 			{{if dbGet (toInt64 $id) $key}}
 				{{$currentPlayers := (dbGet (toInt64 $id) $key).Value}}
 				{{ range $currentPlayers -}}
-					{{if ne $player .}}
+					{{if ne $player .Player}}
 					{{$newPlayerList = $newPlayerList.Append .}}
 					{{end}}
 				{{$currentPlayers = $newPlayerList}}
 				{{- end -}}
 				{{dbSet (toInt64 $id) $key $currentPlayers}}
-							{{editMessage $cid $mid (cembed
+
+				{{/* Here we have to construct a string that can display in our embed, all the players and their rolls */}}
+				{{$playersString := ""}}
+				{{range $currentPlayers}}
+					{{- $playersString = joinStr "" $playersString "\n" "<@" .Player ">" "**: **" "rolled " .roll  }}
+				{{end}}
+
+				{{editMessage $cid $mid (cembed
 			"title" "Dota Call - React ✅ if you're going to play"
-			"description" (print "Players:" $currentPlayers)
+			"description" (print "Players:" $playersString)
 			"color" 0xde2e43)}}
 				{{end}}
 
